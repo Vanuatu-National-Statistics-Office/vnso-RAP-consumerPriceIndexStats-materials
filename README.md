@@ -26,6 +26,5 @@ To know more about Consumer Price Index in Vanuatu. Click [Here](https://vnso.go
     * Consumer Price Index Manual [here](https://www.ilo.org/public/english/bureau/stat/download/cpi/cpi_manual_en.pdf) 
     * United Nations Consumer Price Index Statistics [here](https://unstats.un.org/unsd/class/revisions/coicop_revision.asp
 )
-    * Video by the World Trade Organisation using R [here](https://www.youtube.com/watch?v=kHQJkeOxAKM) 
 
 ![The new Reproducible Analytical Pipeline](images/NewPipeline.png)
