@@ -1,4 +1,4 @@
-# Secure datasets to be used in VNSO trade statistics RAP
+# Secure datasets to be used in VNSO consumer price index  RAP
 
 ## Suggested naming convention
 
@@ -14,3 +14,4 @@
 ## Dataset dictionary
 
 Datasets currently present in secure folder:
+
