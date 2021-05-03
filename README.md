@@ -22,9 +22,9 @@ To know more about Consumer Price Index in Vanuatu. Click [Here](https://vnso.go
     * Blog on RAP [here](https://dataingovernment.blog.gov.uk/2017/03/27/reproducible-analytical-pipeline/)
     * Video of Reproducible analysis using R [here](https://www.youtube.com/watch?v=qvPDE4ppAns) 
 
-- [Introduction to International Merchandise Trade Statistics](https://www.oecd.org/sdd/its/international-merchandise-trade-statistics.htm)
-    * Free international merchandise trade Course [here](https://www.unsdglearn.org/courses/e-learning-on-international-merchandise-trade-statistics/) 
-    * United Nations Trade Statistics [here](https://unstats.un.org/unsd/trade/default.asp)
-    * Video by the World Trade Organisation using R [here](https://www.youtube.com/watch?v=kHQJkeOxAKM) 
+- [Introduction to Consumer Price Index](https://www.elibrary.imf.org/view/books/069/01345-9789221136996-en/C01.xml?language=en)
+    * Consumer Price Index Manual [here](https://www.ilo.org/public/english/bureau/stat/download/cpi/cpi_manual_en.pdf) 
+    * United Nations Consumer Price Index Statistics [here](https://unstats.un.org/unsd/class/revisions/coicop_revision.asp
+)
 
 ![The new Reproducible Analytical Pipeline](images/NewPipeline.png)
