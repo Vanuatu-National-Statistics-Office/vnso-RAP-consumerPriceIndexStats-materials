@@ -37,3 +37,6 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+
+# Ignore files in the secure data folder
+data/secure/*
