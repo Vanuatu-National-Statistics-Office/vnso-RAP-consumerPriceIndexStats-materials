@@ -14,49 +14,31 @@ secureDataFolder <- file.path("..", "data", "secure")
 cpi_file <- file.path(secureDataFolder, "CPI.csv")
 cpi_stats <- read.csv(cpi_file)
 
-### Look at the data ####
-
-# Summary of the data frame.
-summary(cpi_stats)
-sapply(cpi_stats, class)
-
 #### Process the data ####
 
 #Convert columns to numeric
-#Using the transform function for the converting
 column_name_combinations <- expand.grid(c("Mar", "Jun", "Sep", "Dec"), c("08", "09", 10:19))
 quarterly_columns <- paste(column_name_combinations[, 1], column_name_combinations[, 2], sep = ".")
 quarterly_columns <- quarterly_columns[quarterly_columns %in% colnames(cpi_stats)]
 cpi_stats[quarterly_columns] <- sapply(cpi_stats[quarterly_columns], FUN = as.numeric)
 
 # Remove duplicated rows from the CPI data
-duplicated_rows <- duplicated(cpi_stats) 
-cpi_stats <- cpi_stats[duplicated_rows == FALSE, ]
+cpi_stats <- cpi_stats[duplicated(cpi_stats) == FALSE, ]
 
 #### Estimate missing values ####
 
-# Count number of missing values
-sum(is.na(cpi_stats_without_duplicates)) #Finding the total sum of the NA.
-
-# Function to get previous 6 column names
+# Function to get previous column names
 get_previous_columns <- function(current_column, column_names, n = 6){
   
-  # Get index of current column
-  current_column_index <- which(column_names == current_column)
+  # Generate lagged list of column names
+  lagged_column_names <- lag(column_names, n = n)
   
-  # Note the indices of the previous columns
-  indices_of_previous_columns <- (current_column_index - n):(current_column_index - 1)
-  indices_of_previous_columns <- indices_of_previous_columns[indices_of_previous_columns > 0]
+  # Select the previous n column names
+  current_column_lagged_index <- which(lagged_column_names == current_column)
+  previous_columns <- lagged_column_names[(current_column_lagged_index - n):(current_column_lagged_index - 1)]
   
-  # Initialise a vector to store the previous columns
-  previous_columns <- NULL
-  
-  # Check if previous columns available
-  if(length(indices_of_previous_columns) > 0){
-    
-    # Select the previous n values
-    previous_columns <- column_names[indices_of_previous_columns]
-  }
+  # Remove NA values (for when column within n of start)
+  previous_columns <- previous_columns[is.na(previous_columns) == FALSE]
   
   return(previous_columns)
 }
