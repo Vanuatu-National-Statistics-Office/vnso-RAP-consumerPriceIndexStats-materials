@@ -16,8 +16,8 @@ cpi_stats <- read.csv(cpi_file)
 
 #### Process the data ####
 
-#Convert columns to numeric
-column_name_combinations <- expand.grid(c("Mar", "Jun", "Sep", "Dec"), c("08", "09", 10:19))
+# Convert columns to numeric
+column_name_combinations <- expand.grid(c("Mar", "Jun", "Sep", "Dec"), c("08", "09", 10:21))
 quarterly_columns <- paste(column_name_combinations[, 1], column_name_combinations[, 2], sep = ".")
 quarterly_columns <- quarterly_columns[quarterly_columns %in% colnames(cpi_stats)]
 cpi_stats[quarterly_columns] <- sapply(cpi_stats[quarterly_columns], FUN = as.numeric)
@@ -75,7 +75,8 @@ estimate_NAs_based_previous_quarters <- function(cpi_stats, quarterly_columns,
       row_indices_of_NAs <- row_indices_of_NAs[na_counts_by_row < length(previous_columns)]
       
       # Replace the remaining NAs with estimates based on the previous quarters
-      cpi_stats_with_estimates[row_indices_of_NAs, quarterly_column] <- rowMeans(cpi_stats[row_indices_of_NAs, previous_columns], na.rm = TRUE)
+      cpi_stats_with_estimates[row_indices_of_NAs, quarterly_column] <- 
+        rowMeans(cpi_stats[row_indices_of_NAs, previous_columns], na.rm = TRUE)
     }
   }
   
