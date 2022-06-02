@@ -10,14 +10,11 @@ library(stringr)# common string operations
 library(RSQLite)#sql accessing data
 library(DBI) #R database Interface
 library(openxlsx) #read, write and edit Excel
-
+library(readxl)
 
 # Note where VNSO code/data is on current computer
 repository <- file.path(dirname(rstudioapi::getSourceEditorContext()$path), "..", "..")
 setwd(repository) # Required for file.choose() function
-
-# Load the general R functions
-source(file.path(repository, "R", "functions.R"))
 
 # Note the secure data path
 secureDataFolder <- file.path(repository, "data", "secure")
@@ -25,51 +22,40 @@ secureDataFolder <- file.path(repository, "data", "secure")
 # Note the open data path
 openDataFolder <- file.path(repository, "data", "open")
 
-#### Forthnight Prices and Weights####
+#### Stage 1: Fortnight Prices and Weights####
 
 # Read in file for Prices
 forthnightFolder <- file.path(repository, "data", "secure", "Forthnight Collections")
 
 firstForthnightPrice_file <- file.path(forthnightFolder, "CPI_Forthnightly_Price_F1.csv")
 portVilaF1Price_stats <- read.csv (firstForthnightPrice_file)
-
 secondForthnightPrice_file <- file.path(forthnightFolder, "CPI_Forthnightly_Price_F2.csv")
 portVilaF2Price_stats <- read.csv (secondForthnightPrice_file)
-
 thirdForthnightPrice_file <- file.path(forthnightFolder, "CPI_Forthnightly_Price_F3.csv")
 portVilaF3Price_stats <- read.csv (thirdForthnightPrice_file)
-
 fourthForthnightPrice_file <- file.path(forthnightFolder, "CPI_Forthnightly_Price_F4.csv")
 portVilaF4Price_stats <- read.csv (fourthForthnightPrice_file)
-
 fifthForthnightPrice_file <- file.path(forthnightFolder, "CPI_Forthnightly_Price_F5.csv")
 portVilaF5Price_stats <- read.csv (fifthForthnightPrice_file)
-
 sixthForthnightPrice_file <- file.path(forthnightFolder, "CPI_Forthnightly_Price_F6.csv")
 portVilaF6Price_stats <- read.csv (sixthForthnightPrice_file)
 
-#Read in the file for weights
+# Read in the file for weights
 
 firstForthnightWeights_file <- file.path(forthnightFolder, "CPI_Forthnightly_Weights_F1.csv")
 portVilaF1Weights_stats <- read.csv (firstForthnightWeights_file)
-
 secondForthnightWeights_file <- file.path(forthnightFolder, "CPI_Forthnightly_Weights_F2.csv")
 portVilaF2Weights_stats <- read.csv (secondForthnightWeights_file)
-
 thirdForthnightWeights_file <- file.path(forthnightFolder, "CPI_Forthnightly_Weights_F3.csv")
 portVilaF3Weights_stats <- read.csv (thirdForthnightWeights_file)
-
 fourthForthnightWeights_file <- file.path(forthnightFolder, "CPI_Forthnightly_Weights_F4.csv")
 portVilaF4Weights_stats <- read.csv (fourthForthnightWeights_file)
-
 fifthForthnightWeights_file <- file.path(forthnightFolder, "CPI_Forthnightly_Weights_F5.csv")
 portVilaF5Weights_stats <- read.csv (fifthForthnightWeights_file)
-
 sixthForthnightWeights_file <- file.path(forthnightFolder, "CPI_Forthnightly_Weights_F6.csv")
 portVilaF6Weights_stats <- read.csv (sixthForthnightWeights_file)
 
-
-#### Convert the raw data to numeric ####
+# Convert the raw data to numeric #
 
 column_name_combinations <- expand.grid(c("Mar", "Jun", "Sep", "Dec"), c("08", "09", 10:21))
 quarterly_columns <- paste(column_name_combinations[, 1], column_name_combinations[, 2], sep = ".")
@@ -102,19 +88,22 @@ quarterly_columns <- quarterly_columns[quarterly_columns %in% colnames(portVilaF
 portVilaF6Price_stats[quarterly_columns] <- sapply(portVilaF6Price_stats[quarterly_columns], FUN = as.numeric)
 
 
-# Read in the raw trade data from secure folder of the repository 
+# Read in the raw trade data from secure folder of the repository
+
 cpi_file <- file.path(secureDataFolder, "CPI.csv")
 cpi_stats <- read.csv(cpi_file) #replace blank cells with missing values-NA
 names(cpi_stats) [1] <- "ItemId"  #Rename the first column to become ItemId, for the purpose of consistency
 names(cpi_stats)
 
 # Convert columns to numeric
+
 column_name_combinations <- expand.grid(c("Mar", "Jun", "Sep", "Dec"), c("08", "09", 10:21))
 quarterly_columns <- paste(column_name_combinations[, 1], column_name_combinations[, 2], sep = ".")
 quarterly_columns <- quarterly_columns[quarterly_columns %in% colnames(cpi_stats)]
 cpi_stats[quarterly_columns] <- sapply(cpi_stats[quarterly_columns], FUN = as.numeric)
 
-#### Remove duplicated rows from the CPI data####
+# Remove duplicated rows from the CPI data#
+
 cpi_stats <- cpi_stats[duplicated(cpi_stats) == FALSE, ]
 portVilaF1Price_stats <- portVilaF1Price_stats[duplicated(portVilaF1Price_stats) == FALSE, ]
 portVilaF2Price_stats <- portVilaF2Price_stats[duplicated(portVilaF2Price_stats) == FALSE, ]
@@ -123,20 +112,18 @@ portVilaF4Price_stats <- portVilaF4Price_stats[duplicated(portVilaF4Price_stats)
 portVilaF5Price_stats <- portVilaF5Price_stats[duplicated(portVilaF5Price_stats) == FALSE, ]
 portVilaF6Price_stats <- portVilaF6Price_stats[duplicated(portVilaF6Price_stats) == FALSE, ]
 
-#### Restructing the datasets for the weights forthnight####
+# Restructing the datasets for the weights fortnight #
 
-#Remove the last row of this dataframe, so that it can have the same size. The last row was an NA.
+# Remove the last row of this dataframe, so that it can have the same size. The last row was an NA.
 portVilaF6Wgts_new <- head(portVilaF6Weights_stats, - 1)              
 
 colQtrWgts_name <- data.frame(portVilaF2Price_stats$ItemId, portVilaF2Price_stats$Eas, portVilaF2Price_stats$Specification,portVilaF2Price_stats$LocalDescription, portVilaF2Price_stats$Outlet, 
                               portVilaF2Price_stats$Address, portVilaF2Price_stats$CollDay, portVilaF2Price_stats$Active)
 names(colQtrWgts_name) <- c("ItemId", "Eas", "Specification", "Local Description", "Outlet", "Address", "Col Day", "Active")
 
-
 colQtr_Dec08 <- data.frame(portVilaF1Weights_stats$Dec.08, portVilaF2Weights_stats$Dec.08, portVilaF3Weights_stats$Dec.08,
                               portVilaF4Weights_stats$Dec.08, portVilaF5Weights_stats$Dec.08, portVilaF6Wgts_new$Dec.08)
 names(colQtr_Dec08) <- c("Dec.08F1", "Dec.08F2", "Dec.08F3", "Dec.08F4", "Dec.08F5", "Dec.08F6")
-
 
 ColQtr_Mar09 <- data.frame(portVilaF1Weights_stats$Mar.09, portVilaF2Weights_stats$Mar.09, portVilaF3Weights_stats$Mar.09,
                               portVilaF4Weights_stats$Mar.09, portVilaF5Weights_stats$Mar.09, portVilaF6Wgts_new$Mar.09)
@@ -150,7 +137,6 @@ colQtr_Sep09 <- data.frame(portVilaF1Weights_stats$Sep.09, portVilaF2Weights_sta
                               portVilaF4Weights_stats$Sep.09, portVilaF5Weights_stats$Sep.09, portVilaF6Wgts_new$Sep.09)
 names(colQtr_Sep09) <- c("Sep.09F1", "Sep.09F2", "Sep.09F3", "Sep.09F4", "Sep.09F5", "Sep.09F6")                           
 
-                              
 colQtr_Dec09 <- data.frame(portVilaF1Weights_stats$Dec.09, portVilaF2Weights_stats$Dec.09, portVilaF3Weights_stats$Dec.09,
                               portVilaF4Weights_stats$Dec.09, portVilaF5Weights_stats$Dec.09, portVilaF6Wgts_new$Dec.09)
 names(colQtr_Dec09) <- c("Dec.09F1", "Dec.09F2", "Dec.09F3", "Dec.09F4", "Dec.09F5", "Dec.09F6")                              
@@ -166,7 +152,6 @@ names(colQtr_Jun10) <- c("Jun.10F1", "Jun.10F2", "Jun.10F3", "Jun.10F4", "Jun.10
 colQtr_Sep10 <- data.frame(portVilaF1Weights_stats$Sep.10, portVilaF2Weights_stats$Sep.10, portVilaF3Weights_stats$Sep.10,
                               portVilaF4Weights_stats$Sep.10, portVilaF5Weights_stats$Sep.10, portVilaF6Wgts_new$Sep.10)
 names(colQtr_Sep10) <- c("Sep.10F1", "Sep.10F2", "Sep.10F3", "Sep.10F4", "Sep.10F5", "Sep.10F6")
-
 
 colQtr_Dec10 <- data.frame(portVilaF1Weights_stats$Dec.10, portVilaF2Weights_stats$Dec.10, portVilaF3Weights_stats$Dec.10,
                            portVilaF4Weights_stats$Dec.10, portVilaF5Weights_stats$Dec.10, portVilaF6Wgts_new$Dec.10)
@@ -325,7 +310,7 @@ colQtr_Jun20 <- data.frame (portVilaF1Weights_stats$Jun.20, portVilaF2Weights_st
 names(colQtr_Jun20) <- c("Jun.20F1", "Jun.20F2", "Jun.20F3", "Jun.20F4", "Jun.20F5", "Jun.20F6")
 
 
-#### Aggregate of Weights for Port Vila over the 4 quarters####
+# Aggregate of Weights for Port Vila over the 4 quarters #
 
 colQtr_Dec08$Dec08Q4 = rowSums(colQtr_Dec08, na.rm = TRUE, dims = 1L)
 
@@ -387,10 +372,7 @@ colQtr_Dec19$Dec19Q4 = rowSums(colQtr_Dec19, na.rm = TRUE, dims = 1L)
 colQtr_Mar20$Mar20Q1 = rowSums(colQtr_Mar20, na.rm = TRUE, dims = 1L)
 colQtr_Jun20$Jun20Q2 = rowSums(colQtr_Jun20, na.rm = TRUE, dims = 1L)
 
-
-
-#### 
-#### Create the new dataset with constant column for the Forthnights weight####
+# Create the new dataset with constant column for the Fortnights weight#
 
 Dec08Q4Wgts <- cbind(colQtrWgts_name, colQtr_Dec08)
 Dec09Q4Wgts <- cbind(colQtrWgts_name, colQtr_Dec09)
@@ -444,10 +426,7 @@ Sep18Q3Wgts <- cbind(colQtrWgts_name, colQtr_Sep18)
 Sep19Q3Wgts <- cbind(colQtrWgts_name, colQtr_Sep19)
 
 
-
-
-#### 
-#### Aggregate of Prices for Port Vila for the Forthnight ####
+# Aggregate of Prices for Port Vila for the Forthnight #
 
 colQtr4_08 <- data.frame(portVilaF1Price_stats$Dec.08, portVilaF2Price_stats$Dec.08, portVilaF3Price_stats$Dec.08,
                          portVilaF4Price_stats$Dec.08, portVilaF5Price_stats$Dec.08, portVilaF6Price_stats$Dec.08)
@@ -732,7 +711,7 @@ colQtr2_20$Jun20Q2 = rowSums(colQtr2_20,na.rm = TRUE, dims = 1L)
 Jun20Q2Prices <- cbind(colQtrWgts_name,colQtr2_20)
 
 
-#### Dividing the Aggregate Price over Aggregate Weights for Quater for Port Vila ####
+# Dividing the Aggregate Price over Aggregate Weights for Quarter for Port Vila #
 
 #Following the mutate functions, allow for us to keep the constant Columns and be able to
 # create a new column where we take Price and divide it by Weight of their respective Quarters.
@@ -793,29 +772,13 @@ Sep17PriceWgts <- mutate(colQtrWgts_name, pricePerKilo = Sep17Q3Prices$Sep17Q3 /
 Sep18PriceWgts <- mutate(colQtrWgts_name, pricePerKilo = Sep18Q3Prices$Sep18Q3 / Sep18Q3Wgts$Sep18Q3)
 Sep19PriceWgts <- mutate(colQtrWgts_name, pricePerKilo = Sep19Q3Prices$Sep19Q3 / Sep19Q3Wgts$Sep19Q3)
 
-
-
-
-
-
-
-
-
-
-
-#### Merging of the Quarterly Data into the MasterSpreadsheet ####
+# Merging of the Quarterly Data into the Master Spreadsheet #
 
 quarterly_data <- openxlsx::read.xlsx (
   xlsxFile = file.path(repository, "data", "secure", "CPI Port Vila.xlsx"),
   (sheets = ("PVila Item list")),
 startRow = (2:1869)
   )
-
-#Will 
-
-
-
-
 
 #1. Input all the pricePerKilo into the cpi_stats.
 #2. Subset the data for the ItemId and their respective Qtr
@@ -831,6 +794,57 @@ startRow = (2:1869)
 #dbGetQuery(mydb, "UPDATE cpi_stats SET cpi_stats.[Dec.08] = dec08PriceWgts.pricePerKilo FROM dec08PriceWgts, cpi_stats WHERE cpi_stats.ItemId = dec08PriceWgts.ItemId")
 
 
+#### Stage 2: Quality check of quarterly collection ####
+
+
+#### Stage 3: Sample Aggregates ####
+
+# Read in the raw data from secure folder of the repository 
+cpiItemListFile <- file.path(secureDataFolder, "13.CPI_ Average_Price_PVItemList.csv")
+cpiItemList <- read.csv(cpiItemListFile, header=TRUE, na.strings=c("","NA", "NULL", "null")) 
+cpiSampleAggFile <- file.path(secureDataFolder, "14.CPI_Aggregated_Price_SampleAggregates.csv")
+cpiSampleAgg <- read.csv(cpiSampleAggFile, header=TRUE, na.strings=c("","NA", "NULL", "null")) 
+cpiElementaryAggFile<- file.path(secureDataFolder, "15.CPI_ElementaryAggregates_Index_EAs.csv")
+cpiElementaryAgg <- read.csv(cpiElementaryAggFile, header=TRUE, na.strings=c("","NA", "NULL", "null")) 
+
+# Create subset data set of just Eas & formula method
+eaCompMeth <- c("EA", "Formula.method")
+newdata <- cpiSampleAgg[eaCompMeth]
+
+# Merge new dataset with item list to assign formula method 
+colnames(newdata)[1] <- "Eas"
+cpiItemListMerged<- merge(cpiItemList, newdata, by="Eas", all.x=TRUE)
+
+# Calculate the geometric and arithmetic means of commodities 
+cpiItemListMerged$Mar.19 <- as.numeric(gsub(",", "", cpiItemListMerged$Mar.19))
+arthMeanComm<- cpiItemListMerged %>%
+  group_by(Eas) %>%
+  filter(Mar.19 %in% c("NA")) %>%
+  filter("Formula.method" %in% c("1")) %>%
+  filter("Active" %in% c("Y")) %>%
+  summarise(Mar.19 = mean(Mar.19))
+
+geoMeanComm<- cpiItemList %>%
+  group_by(Eas) %>%
+  filter(`Formula method` %in% c("2")) %>%
+  filter(Active %in% c("Y")) %>%
+  summarise(Price = exp(mean(log(`40238`))))
+
+# Row bind the geometric and arithmetic means together
+meansCombined<- bind_rows(arthMeanComm, geoMeanComm)
+
+# Append means combined with sample aggregates
+colnames(cpiSampleAggStats)[1] <- "Eas"
+sampleAggMerged<- merge(cpiSampleAggStats, meansCombined, by="Eas", all.x=TRUE)
+
+
+#### Stage 4: Elementary Aggregates ####
+
+# Create new column and append it to another dataframe
+cpiElementaryAgg$Mar <- sampleAggMerged$Price / sampleAggMerged$'43983'
+
+
+#### Stage 5: Value Aggregates ####
 
 
 
@@ -838,3 +852,7 @@ startRow = (2:1869)
 
 
 
+
+
+
+#### Stage 6: 
