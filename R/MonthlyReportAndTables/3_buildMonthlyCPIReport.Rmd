@@ -1,0 +1,191 @@
+---
+title: "Vanuatu Consumer Price Index - `r format(Sys.Date(), '%B %Y')` Highlights"
+output: 
+  word_document:
+    reference_docx: styles_reference.docx
+---
+
+
+```{r setup, include=FALSE}
+# Set echo=FALSE as default for code cells
+knitr::opts_chunk$set(echo = FALSE, 
+                      warning = FALSE,
+                      dpi = 600)
+```
+
+
+```{r preparation, include = FALSE}
+# Install Required Packages
+#install.packages("knitr")
+#install.packages("flextable")
+#install.packages("rnaturalearth")
+#install.packages("sf")
+#install.packages("ggplot2")
+#install.packages("dplyr")
+#install.packages("tidyr")
+#install.packages("janitor")
+rm(list = ls())
+
+# Load the required libraries
+library(knitr) # Creating documents
+library(flextable) # Nicely formatted tables
+library(rnaturalearth) # World map
+library(sf) # Working with spatial data
+library(ggplot2) # Creating plots
+library(dplyr) # Working with data
+library(tidyr) # For pivoting data.frames
+library(janitor) # Adding row and column totals
+
+# Set the table formatting defaults
+set_flextable_defaults(font.family="Times New Roman", font.size=5, font.color="black",
+                       text.align="left", table.layout="fixed", theme_fun="theme_booktabs")
+
+# Note where VNSO code/data is on current computer
+repository <- file.path("..", "..")
+
+# Note the open data path
+openDataFolder <- file.path(repository, "data", "open")
+
+# Note the secure data path
+secureDataFolder <- file.path(repository, "data", "secure")
+
+# Load the general R functions
+source(file.path(repository, "R", "functions.R"))
+
+# Some general ggplot settings
+plotTextSize <- 9
+xAxisText <- list(
+  "angle" = 35,
+  "size" = plotTextSize,
+  "vjust" = 1.1,
+  "hjust" = 1
+)
+```
+
+
+```{r load data}
+#TODO: Consider whether all these input files are necessary, could fewer files be read and these files generated internally?
+
+# Load the processed CPI statistics for quarter of interest
+processedCPIStats <- read.csv(file.path(secureDataFolder, "processed data_cpi.csv"))
+
+```
+
+# National Sustainable Development Plan Indicators (NSDP)- Table
+
+```{r NSDP table}
+# Create the NSDP table
+x <- 23
+y <- 7
+nsdpIndicators <- data.frame(
+  "Policy Objectives"=c("ECO 1.1: Promote stable growth through
+responsible fiscal, and a counter-cyclical
+monetary policy targeting stability in inflation",
+                        "ENV 1.3: Reduce reliance on food imports through import substitution for food products that can be produced domestically"),
+
+  "SMART Indicators"=c("ECO 1.1.1 Change in underlying inflation rate (CPI analysis)",
+                       "ENV 1.3.3 Food Price Inflation Rate or Food Price Index compared to the national consumer price index (how much are prices for food going up or down, relative to all prices in the country-based on VNSO data)"),
+
+  "Indicator Value"= c(
+    x,
+    y
+  ),check.names=FALSE, stringsAsFactors=FALSE)
+
+
+# Round the indicator values
+nsdpIndicators$`Indicator Value` <- round(nsdpIndicators$`Indicator Value`, digits = 2)
+
+# Initiailise a flextable object for NSDP table
+indicatorsTable <- flextable(nsdpIndicators)
+
+# Add a header row and set background colour
+indicatorsTable <- bg(indicatorsTable, bg="coral1", part="header")
+
+# Set the vertical alignment to top
+indicatorsTable <- valign(indicatorsTable, valign="top", part="all")
+
+# Merge repeated values in the Policy Objectives column
+indicatorsTable <- merge_v(indicatorsTable, j = "Policy Objectives")
+
+# Set table width to 100%
+indicatorsTable <- set_table_properties(indicatorsTable, width=1, layout="autofit")
+
+# Set the theme
+indicatorsTable <- theme_booktabs(indicatorsTable)
+
+# Print table
+indicatorsTable
+
+```
+
+
+# CPI percentage change from previous quarter- horizontal bar chart that inlcudes negative numbers
+
+```{}
+
+
+```
+
+
+# CPI quatrerly change for the same quarter 2012-2022- Line Graph 
+
+
+``` {r cpi process}
+# Create a line graph
+processedCPIStats$year <- as.numeric(processedCPIStats$year)
+
+ggplot(data = processedCPIStats, aes(x = year, y = stats_value, group = factor(groupings))) +
+  geom_line(aes(color = factor(groupings)), size = 1.5, alpha = 0.75) +
+  labs(y = "Indices") +
+  guides(color=guide_legend(title="Quarterly Trend\nAnalysis")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = xAxisText$angle,
+                                   hjust = xAxisText$hjust, 
+                                   size = xAxisText$size),
+        axis.title.y = element_text(size = plotTextSize),
+        axis.title.x = element_blank(),
+        legend.title = element_text(size = plotTextSize))
+
+# Filter Consumer Price Index and qtr 1
+# Read File
+cpiStats <- read.csv(file.path(secureDataFolder, "cpi2.csv"))
+
+# Convert values in column - year to numeric
+cpiStats$year <- as.numeric(cpiStats$year)
+
+# Filter quarter 1
+filterCpiStats <- cpiStats[cpiStats$quarter == 1, ]
+  
+
+# Plot Values in line graph
+  subset(cpiStats$year, quarters == 1)
+ggplot(data = filterCpiStats, aes(x = year, y = stats_value, group = factor(location))) +
+  geom_line(aes(color = factor(location)), size = 1.5, alpha = 0.75) +
+  labs(y = "Indices") +
+  guides(color=guide_legend(title="Quarterly Trend\nAnalysis")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = xAxisText$angle,
+                                   hjust = xAxisText$hjust, 
+                                   size = xAxisText$size),
+        axis.title.y = element_text(size = plotTextSize),
+        axis.title.x = element_blank(),
+        legend.title = element_text(size = plotTextSize))
+
+```
+
+
+# Main drivers for inflation (example food, household utilities)- Infographic
+
+```{}
+
+
+```
+
+
+# Consumer Price Indices by Expenditure Group- Table (large 10x10)
+
+```{}
+
+
+```
+
